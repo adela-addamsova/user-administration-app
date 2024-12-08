@@ -5,7 +5,7 @@ User Administration Application is based on Nette. It is basic app for managing 
 
 Installation
 ------------
-composer create-project jackie/user_admin
+composer create-project jackie/user_administration
 
 After Installation
 ------------------
