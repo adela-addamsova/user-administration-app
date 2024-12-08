@@ -1,0 +1,32 @@
+parameters:
+
+
+application:
+	errorPresenter:
+		4xx: Error:Error4xx
+		5xx: Error:Error5xx
+	mapping: App\UI\*\**Presenter
+
+
+database:
+	dsn: 'mysql:host=127.0.0.1;dbname=UserApp'
+	user: root
+	password: pernicek
+
+
+latte:
+	strictTypes: yes
+	strictParsing: yes
+	extensions:
+		- App\UI\Accessory\LatteExtension
+
+
+di:
+	export:
+		parameters: no
+		tags: no
+
+session:
+    expiration: 14 days
+    autoStart: true
+

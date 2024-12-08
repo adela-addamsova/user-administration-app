@@ -1,0 +1,57 @@
+{block title}User Administration Login{/block} 
+
+{block content} 
+{form loginForm}
+<section class="gradient-custom">
+  <div class="container py-5 w-75 h-75">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+        <div
+          class="alert alert-{$flash->type} mx-auto"
+          role="alert"
+          n:if="$flashes"
+          n:foreach="$flashes as $flash"
+        >
+          {$flash->message}
+        </div>
+        <div class="card bg-dark text-white" style="border-radius: 1rem">
+          <div class="card-body p-5 text-center">
+            <div class="mb-md-2 mt-md-2 pb-3">
+              <h1 class="fw-bold mb-2 text-uppercase">Login</h1>
+              <p class="text-white-50 mb-4">
+                Enter your username and password!
+              </p>
+
+              <div data-mdb-input-init class="form-outline form-white mb-4 w-75 mx-auto">
+                {label login, class => "form-label " /} {input login, class =>
+                "form-control ", placeholder => "Username"}
+              </div>
+
+              <div data-mdb-input-init class="form-outline form-white mb-4 w-75 mx-auto">
+                {label password, id => "inputPassword5", class => "form-label"
+                /} {input password, class => "form-control ", placeholder =>
+                "**************", id => "inputPassword5"}
+              </div>
+
+              <div class="mb-3 form-check">
+                {label remember, class => "form-check-label" /} {input remember,
+                class => "form-check-input"}
+              </div>
+
+              {input send, class => "btn btn-outline-light px-5"}
+            </div>
+
+            <div>
+              <p class="mb-0"> Don't have an account?
+                <a n:href="SignUp:signup" class="text-white-50 fw-bold"
+                  ><span style="color: #55d610">Sign Up</span></a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{/form} 
+{/block}

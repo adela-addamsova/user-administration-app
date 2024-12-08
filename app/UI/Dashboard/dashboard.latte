@@ -1,0 +1,27 @@
+{block title}Dashboard{/block} 
+
+{block content}
+<section class="centered">
+  <div class="container py-5 w-100 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="w-100">
+        <div
+          class="alert alert-{$flash->type} mx-auto"
+          role="alert"
+          n:if="$flashes"
+          n:foreach="$flashes as $flash"
+        >
+          {$flash->message}
+        </div>
+
+        <div class="mb-4 text-center">
+          <h1>Dashboard</h1>
+        </div>
+
+        {control simpleGrid}
+
+      </div>
+    </div>
+  </div>
+</section>
+{/block}

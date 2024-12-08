@@ -1,0 +1,15 @@
+services:
+	- App\Core\RouterFactory::createRouter
+	- Authenticator
+	- App\Model\UserService
+
+
+search:
+	-	in: %appDir%
+		classes:
+			- *Factory
+			- *Facade
+
+session:
+    expiration: 14 days
+    autoStart: true
