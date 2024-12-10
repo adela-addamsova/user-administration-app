@@ -195,4 +195,15 @@ class UserService
             return false;
         }
     }
+
+    /**
+     * Delete user
+     * Deletes a user that according to id
+     * @param mixed $id
+     * @return void
+     */
+    public function deleteUser($id): void
+    {
+        $this->database->table('users')->where('id', $id)->delete();
+    }
 }

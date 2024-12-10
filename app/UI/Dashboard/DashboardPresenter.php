@@ -7,6 +7,7 @@ namespace App\UI\Dashboard;
 use Ublaboo\DataGrid\DataGrid;
 use Nette\Application\UI\Presenter;
 use App\Model\UserService;
+use Ublaboo\DataGrid\Column\Action\Confirmation\CallbackConfirmation;
 
 /**
  * Class DashboardPresenter
@@ -87,11 +88,21 @@ class DashboardPresenter extends Presenter
         $grid->addFilterText('email', 'Search by Login')
             ->addAttribute('placeholder', 'Search by email');
 
-        $grid->addAction('edit', 'Edit User', 'editUser!')
-            ->setIcon('edit')
+        $grid->addAction('edit', 'Edit', 'editUser!')
             ->setTitle('Edit')
-            ->setClass('btn btn-xs btn-primary');
+            ->setClass('btn btn-xs btn-primary edit');
 
+        $grid->addAction('delete', 'Delete', 'deleteUser!')
+            ->setTitle('Delete')
+            ->setClass('btn btn-xs btn-primary delete')
+            ->setConfirmation(
+                new CallbackConfirmation(
+                    function ($user):string {
+                        $confirmMessage = "Do you really want to delete user with id $user->id?";
+                        return $confirmMessage;
+                    }
+                )
+            );
 
         return $grid;
     }
@@ -105,5 +116,24 @@ class DashboardPresenter extends Presenter
     public function handleEditUser($id)
     {
         $this->redirect('EditUser:editUser', ['id' => $id]);
+    }
+
+    /**
+     * Handle Delete User
+     * Handles the delete action for a user and redirects back to dashboard
+     * @param int|string $id - ID of the user to delete
+     * @return void
+     */
+    public function handleDeleteUser($id): void
+    {
+        $this->userService->deleteUser($id);
+
+        $this->flashMessage("User with id $id has been deleted.", 'success');
+
+        if ($this->isAjax()) {
+            $this['actionsGrid']->reload();
+        } else {
+            $this->redirect('this');
+        }
     }
 }
