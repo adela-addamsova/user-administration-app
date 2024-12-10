@@ -104,7 +104,7 @@ class UserService
      */
     public function getUsersData()
     {
-        return $this->database->table('users');
+        return $this->database->table('users')->where( 'deleted_at IS NULL');
     }
 
     /** 
@@ -204,6 +204,6 @@ class UserService
      */
     public function deleteUser($id): void
     {
-        $this->database->table('users')->where('id', $id)->delete();
+        $this->database->table('users')->where('id', $id)->update(['deleted_at' => new \DateTime()]);
     }
 }
