@@ -57,14 +57,16 @@ class LoginPresenter extends Presenter
      * @return void 
      */
     public function loginFormSucceeded(Form $form, \stdClass $values): void
-    {
+    {   
         try {
             $this->userService->login($values->login, $values->password, $values->remember);
             $this->redirect('Dashboard:dashboard');
         } catch (AuthenticationException $e) {
-            if ($e->getMessage() === 'invalid login') {
+            if ($e->getMessage() === 'Deleted user') {
+                $this->flashMessage('Your account was deleted. You can not login!', 'danger');
+            } elseif ($e->getMessage() === 'Invalid login') {
                 $this->flashMessage('The username does not exist.', 'danger');
-            } elseif ($e->getMessage() === 'invalid password') {
+            } elseif ($e->getMessage() === 'Invalid password') {
                 $this->flashMessage('The password is incorrect.', 'danger');
             } else {
                 $this->flashMessage('Invalid credentials. Please try again.', 'danger');

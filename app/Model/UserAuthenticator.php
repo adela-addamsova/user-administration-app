@@ -40,9 +40,13 @@ class Authenticator implements Nette\Security\Authenticator
      * @return IIdentity - Returns a SimpleIdentity instance representing the authenticated user
      * @throws AuthenticationException - Throws exception if authentication fails due to invalid username or password
      */
-    public function authenticate(string $username, string $password): IIdentity
+    public function authenticate(string $login, string $password): IIdentity
     {
-        $user = $this->database->table('users')->where('login', $username)->fetch();
+        $user = $this->database->table('users')->where('login', $login)->fetch();
+
+        if($user && $user->deleted_at !== NULL) {
+            throw new AuthenticationException('Deleted user');
+        }
 
         if (!$user) {
             throw new AuthenticationException('Invalid login');
