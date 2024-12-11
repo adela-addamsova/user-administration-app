@@ -149,7 +149,6 @@ class UserService
     public function isPasswordValid($password): bool
     {
         if (preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/', $password)) {
-
             return true;
         } else {
             return false;
@@ -174,27 +173,31 @@ class UserService
      * @param array $data - An associative array containing the user's data
      * @return bool - Returns true if the registration is successful, false otherwise
      */
-    public function registerUser(array $data): bool
-    {
-        if ($this->isLoginTaken($data['login']) || $this->isEmailTaken($data['email'])) {
-            return false;
-        }
+        public function registerUser(array $data): string
+        {
+            if ($this->isLoginTaken($data['login'])) {
+                return 'login_taken';
+            }
+        
+            if ($this->isEmailTaken($data['email'])) {
+                return 'email_taken';
+            }
 
-        $hashedPassword = $this->password->hash($data['password']);
+            $hashedPassword = $this->password->hash($data['password']);
 
-        try {
-            $this->database->table('users')->insert([
-                'login' => $data['login'],
-                'firstname' => $data['firstname'],
-                'lastname' => $data['lastname'],
-                'email' => $data['email'],
-                'password' => $hashedPassword,
-            ]);
-            return true;
-        } catch (\Exception $e) {
-            return false;
+            try {
+                $this->database->table('users')->insert([
+                    'login' => $data['login'],
+                    'firstname' => $data['firstname'],
+                    'lastname' => $data['lastname'],
+                    'email' => $data['email'],
+                    'password' => $hashedPassword,
+                ]);
+                return 'success';
+            } catch (\Exception $e) {
+                return 'error';
+            }
         }
-    }
 
     /**
      * Delete user

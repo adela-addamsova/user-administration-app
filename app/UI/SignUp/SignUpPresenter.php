@@ -54,12 +54,7 @@ class SignUpPresenter extends Presenter
             ->setRequired();
         $form->addPassword('passwordCheck', 'Confirm password:')
             ->setHtmlAttribute('placeholder', '************')
-            ->setRequired()
-            ->addRule(
-                $form::EQUAL,
-                'Passwords do not match',
-                $form['password']
-            );
+            ->setRequired();
         $form->addSubmit('send', 'Create new user');
 
         $form->onSuccess[] = [$this, 'signUpFormSuccess'];
@@ -76,18 +71,24 @@ class SignUpPresenter extends Presenter
      */
     public function signUpFormSuccess(Form $form, $values): void
     {
-        if (!$this->userService->isPasswordValid($values->password)) {
-            $this->flashMessage('Password must have at least 8 characters and include numbers, lowercase, and uppercase letters.', 'danger');
-            $this->redirect('this');
+        if ($form->isSubmitted() && !$form->isValid()) {
+            foreach ($form->getErrors() as $error) {
+                $this->flashMessage($error, 'danger');
+            }
             return;
         }
 
-        if ($form->isSubmitted() && !$form->isValid()) {
-            foreach ($form->getErrors() as $error) {
-                echo $error;
-            }
+        if (!$this->userService->isPasswordValid($values->password)) {
+            $this->flashMessage('Password must have at least 8 characters and include numbers, 
+            lowercase, and uppercase letters.', 'danger');
+            return;
         }
 
+        if ($values->password !== $values->passwordCheck) {
+            $this->flashMessage('Passwords do not match.', 'danger');
+            return;
+        }
+        
         $data = [
             'login' => $values->login,
             'firstname' => $values->firstname,
@@ -96,16 +97,32 @@ class SignUpPresenter extends Presenter
             'password' => $values->password
         ];
 
-        $registrationSuccess = $this->userService->registerUser($data);
+        $registrationResult = $this->userService->registerUser($data);
 
-        if ($registrationSuccess) {
-            $this->registrationSuccessful = true;
-            $this->flashMessage('Registration successful!', 'success');
-        } else {
-            $this->registrationSuccessful = false;
-            $this->flashMessage('Username or E-mail is already taken!', 'danger');
+        switch ($registrationResult) {
+            case 'success':
+                $this->registrationSuccessful = true;
+                $this->flashMessage('Registration successful!', 'success');
+                $this->redirect('this');
+                break;
+
+            case 'login_taken':
+                $this->registrationSuccessful = false;
+                $this->flashMessage('Username is already taken!', 'danger');
+                break;
+
+            case 'email_taken':
+                $this->registrationSuccessful = false;
+                $this->flashMessage('Email is already taken!', 'danger');
+                break;
+
+            default:
+                $this->registrationSuccessful = false;
+                $this->flashMessage('An unexpected error occurred. Please try again later.', 'danger');
+                break;
         }
     }
+
 
     /**
      * Render SignUp 
