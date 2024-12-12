@@ -15,9 +15,6 @@ composer create-project jackie/user_administration
 
 - Open schema sql in root folder and run the commands.
 
-- Find the file _vendor\ublaboo\datagrid\src\Components\DataGridPaginator\templates\data_grid_paginator.latte_ 
-and copy over the content of the `data_grid_paginator.latte` file in the root folder
-
 - Setup server
 ```
 cd user-administration
