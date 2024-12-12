@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\UI\Dashboard;
 
-use Ublaboo\DataGrid\DataGrid;
-use Nette\Application\UI\Presenter;
 use App\Model\UserService;
+use Nette\Application\UI\Presenter;
+use Ublaboo\DataGrid\DataGrid;
 use Ublaboo\DataGrid\Column\Action\Confirmation\CallbackConfirmation;
 
 /**
@@ -57,12 +57,14 @@ class DashboardPresenter extends Presenter
 
     /**
      * Create Component Simple Grid
-     * Creates a DataGrid component for displaying users data
+     * Creates a DataGrid component for displaying users' data
      * @return DataGrid - Returns an instance of Ublaboo\DataGrid\DataGrid
      */
     protected function createComponentSimpleGrid(): DataGrid
     {
         $grid = new DataGrid($this, 'simpleGrid');
+
+        $grid->setCustomPaginatorTemplate(__DIR__ . '/grid/data_grid.paginator.latte');
 
         $grid->setDataSource($this->userService->getUsersData());
 
@@ -77,15 +79,15 @@ class DashboardPresenter extends Presenter
         $grid->addColumnText('lastname', 'Lastname')
             ->setSortable();
 
-        $grid->addFilterText('id', 'Search by Login')
+        $grid->addFilterText('id', 'Search id')
             ->addAttribute('placeholder', 'Search by id');
-        $grid->addFilterText('login', 'Search by Login')
+        $grid->addFilterText('login', 'Search login')
             ->addAttribute('placeholder', 'Search by username');
-        $grid->addFilterText('firstname', 'Search by Login')
+        $grid->addFilterText('firstname', 'Search firstname')
             ->addAttribute('placeholder', 'Search by firstname');
-        $grid->addFilterText('lastname', 'Search by Login')
+        $grid->addFilterText('lastname', 'Search lastname')
             ->addAttribute('placeholder', 'Search by lastname');
-        $grid->addFilterText('email', 'Search by Login')
+        $grid->addFilterText('email', 'Search email')
             ->addAttribute('placeholder', 'Search by email');
 
         $grid->addAction('edit', 'Edit', 'editUser!')
