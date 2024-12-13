@@ -18,3 +18,5 @@ log/
 # Ignore system files
 .DS_Store
 Thumbs.db
+
+style.html
