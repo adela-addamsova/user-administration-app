@@ -10886,6 +10886,9 @@ html {
 
 .text-left.col-email, .text-left.col-id, .text-left.col-firstname, .text-left.col-lastname, .text-left.col-login, .col-action.text-center {
   padding: 1rem;
+  height: fit-content;
+  width: fit-content;
+  text-align: center;
 }
 
 .text-left.col-login .form-control.input-sm.form-control-sm, .text-left.col-id .form-control.input-sm.form-control-sm, .text-left.col-firstname .form-control.input-sm.form-control-sm, .text-left.col-lastname .form-control.input-sm.form-control-sm, .text-left.col-email .form-control.input-sm.form-control-sm, .col-action.text-center .form-control.input-sm.form-control-sm{
@@ -10899,7 +10902,6 @@ td {
   justify-content: center;
   padding: 0;
   margin: 0;
-  /* line-height: 2rem; */
 }
 
 .col-per-page.text-right {
@@ -10907,8 +10909,6 @@ td {
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 1rem;
-  /* margin: 2rem auto 1rem auto; */
-  /* display: none; */
 }
 
 .form-control.input-sm.form-control-sm {
@@ -10917,12 +10917,6 @@ td {
   margin-right: auto;
   margin-bottom: 0.5rem;  
 }
-
-/* .datagrid-per-page-submit {
-  margin: 1rem 0;
-  padding: 0.5rem 1rem;
-  border-radius: 10px;
-} */
 
 .btn.btn-xs.btn-primary {
   margin: 0.4rem;
@@ -10936,9 +10930,22 @@ td {
   border-radius: 5px;
   padding: 0.3rem;
 }
-a{
+a {
     color: white;
     text-decoration: none;
+}
+
+.delete {
+  background-color: darkorange;
+  border: darkgoldenrod;
+  color: black;
+}
+
+.delete:hover {
+  background-color: red;
+}
+.edit:hover {
+  background-color: green;
 }
 
 /* .gradient-custom { */  
