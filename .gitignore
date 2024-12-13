@@ -1,3 +1,7 @@
+# Ignore temporary files and cache
+temp/**
+log/
+
 # Ignore Composer dependencies
 /vendor/
 /composer.lock
@@ -14,8 +18,3 @@
 # Ignore system files
 .DS_Store
 Thumbs.db
-
-# Ignore temporary files and cache
-/app/temp/
-/app/cache/
-/log/
