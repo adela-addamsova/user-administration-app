@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Model;
 
 use Nette\Database\Explorer;
+use Nette\Database\UniqueConstraintViolationException;
 use Nette\Security\User;
 use Nette\Security\Passwords;
 use Nette\Http\Request;
-use Nette\Security\AuthenticationException;
+use App\Model\UserErrorMessages;
+use Exception;
 
 /**
  * Class UserService
@@ -38,13 +40,30 @@ class UserService
     }
 
     /**
-     * Check Login Status 
-     * Checks if the current user is logged in
-     * @return bool - Returns true if the user is logged in, false otherwise
+     * Get User
+     * @return User
      */
-    public function checkLoginStatus(): bool
+    public function getUser(): User
     {
-        return $this->user->isLoggedIn();
+        return $this->user;
+    }
+
+    /**
+     * Get Password
+     * @return Passwords
+     */
+    public function getPassword(): Passwords
+    {
+        return $this->password;
+    }
+
+    /**
+     * Get Http Request
+     * @return Request
+     */
+    public function getHttpRequest(): Request
+    {
+        return $this->httpRequest;
     }
 
     /**
@@ -53,25 +72,18 @@ class UserService
      * @param string $username - User's username
      * @param string $password - User's password
      * @param bool $remember - Flag indicating whether to remember the user for a longer period
-     * @return bool - Returns true if the login is successful
-     * @throws AuthenticationException - Thrown if authentication fails */
-    public function login(string $username, string $password, bool $remember): bool
+     */
+    public function login(string $username, string $password, bool $remember): void
     {
-        try {
-            $this->user->login($username, $password, $remember);
+        $this->user->login($username, $password, $remember);
 
-            if ($remember) {
-                $this->user->setExpiration('14 days', false);
-            } else {
-                $this->user->setExpiration('20 minutes', true);
-            }
-
-            $this->logLoginAttempt();
-
-            return true;
-        } catch (AuthenticationException $e) {
-            throw $e;
+        if ($remember) {
+            $this->user->setExpiration('14 days', false);
+        } else {
+            $this->user->setExpiration('20 minutes', true);
         }
+
+        $this->logLoginAttempt();
     }
 
     /** 
@@ -100,11 +112,11 @@ class UserService
     /**
      * Get User's Data 
      * Retrieves all user data from the database
-     * @return - returns a selection of all users from the database 
+     * @return - returns a selection of all users from the database that are not deleted
      */
     public function getUsersData()
     {
-        return $this->database->table('users')->where( 'deleted_at IS NULL');
+        return $this->database->table('users')->where('deleted_at IS NULL');
     }
 
     /** 
@@ -169,39 +181,29 @@ class UserService
 
     /**
      * Register User
-     * Registers a new user by checking if the login or email already exists, hashing the password, and inserting the user into the database
+     * Registers a new user by checking if the login or email already exists, 
+     * hashing the password, and inserting the user into the database
      * @param array $data - An associative array containing the user's data
      * @return bool - Returns true if the registration is successful, false otherwise
      */
-        public function registerUser(array $data): string
-        {
-            if ($this->isLoginTaken($data['login'])) {
-                return 'login_taken';
-            }
-        
-            if ($this->isEmailTaken($data['email'])) {
-                return 'email_taken';
-            }
+    public function registerUser(array $data): string
+    {
+        $hashedPassword = $this->password->hash($data['password']);
 
-            $hashedPassword = $this->password->hash($data['password']);
+        $this->database->table('users')->insert([
+            'login' => $data['login'],
+            'firstname' => $data['firstname'],
+            'lastname' => $data['lastname'],
+            'email' => $data['email'],
+            'password' => $hashedPassword,
+        ]);
 
-            try {
-                $this->database->table('users')->insert([
-                    'login' => $data['login'],
-                    'firstname' => $data['firstname'],
-                    'lastname' => $data['lastname'],
-                    'email' => $data['email'],
-                    'password' => $hashedPassword,
-                ]);
-                return 'success';
-            } catch (\Exception $e) {
-                return 'error';
-            }
-        }
+        return 'success';
+    }
 
     /**
      * Delete user
-     * Deletes a user that according to id
+     * Deletes a user according to id
      * @param mixed $id
      * @return void
      */
