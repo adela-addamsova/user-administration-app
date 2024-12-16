@@ -6,8 +6,9 @@ namespace App\UI\Login;
 
 use Nette\Application\UI\Presenter;
 use Nette\Application\UI\Form;
-use App\Model\userService;
+use App\Model\UserService;
 use Nette\Security\AuthenticationException;
+use App\Model\UserErrorMessages;
 
 /**
  * Class LoginPresenter
@@ -26,6 +27,21 @@ class LoginPresenter extends Presenter
     {
         parent::__construct();
         $this->userService = $userService;
+    }
+
+    /**
+     * Startup
+     * Checks if the user is logged in and redirects to the dashboard page if is authenticated
+     * @return void 
+     */
+    public function startup()
+    {
+        parent::startup();
+
+        if ($this->userService->getUser()->loggedIn) {
+            $this->flashMessage('This seccion is only for users that are not logged in.', 'warning');
+            $this->redirect('Dashboard:dashboard');
+        }
     }
 
     /**
@@ -52,35 +68,33 @@ class LoginPresenter extends Presenter
     /**
      * Login Form Succeeded
      * Handles the successful submission of the login form. Attempts to log in the user using the userService and redirects to the dashboard on success
-     * @param Form $form - The submitted form instance
-     * @param \stdClass $values - The submitted form values
+     * @param \stdClass $formValues - The submitted form values
      * @return void 
      */
-    public function loginFormSucceeded(Form $form, \stdClass $values): void
-    {   
+    public function loginFormSucceeded(\stdClass $formValues): void
+    {
         try {
-            $this->userService->login($values->login, $values->password, $values->remember);
+            $this->userService->login($formValues->login, $formValues->password, $formValues->remember);
             $this->redirect('Dashboard:dashboard');
         } catch (AuthenticationException $e) {
-            if ($e->getMessage() === 'Deleted user') {
-                $this->flashMessage('Your account was deleted. You can not login!', 'danger');
-            } elseif ($e->getMessage() === 'Invalid login') {
-                $this->flashMessage('The username does not exist.', 'danger');
-            } elseif ($e->getMessage() === 'Invalid password') {
-                $this->flashMessage('The password is incorrect.', 'danger');
-            } else {
-                $this->flashMessage('Invalid credentials. Please try again.', 'danger');
+            switch ($e->getMessage()) {
+
+                case UserErrorMessages::DELETED_USER:
+                    $this->flashMessage(UserErrorMessages::DELETED_USER, 'danger');
+                    break;
+
+                case UserErrorMessages::INVALID_LOGIN:
+                    $this->flashMessage(UserErrorMessages::INVALID_LOGIN, 'danger');
+                    break;
+
+                case UserErrorMessages::INVALID_PASSWORD:
+                    $this->flashMessage(UserErrorMessages::INVALID_PASSWORD, 'danger');
+                    break;
+
+                default:
+                    $this->flashMessage('Invalid credentials. Please try again.', 'danger');
+                    break;
             }
         }
-    }
-
-    /**
-     * Render Login 
-     * Sets a template variable indicating whether the user is logged in
-     * @return void 
-     */
-    public function renderLogin(): void
-    {
-        $this->template->isLoggedIn = $this->user->isLoggedIn();
     }
 }
