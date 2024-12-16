@@ -1,8 +1,8 @@
 services:
 	- App\Core\RouterFactory::createRouter
-	- Authenticator
+	- App\Model\UserAuthenticator
 	- App\Model\UserService
-
+	- App\Model\UserErrorMessages
 
 search:
 	-	in: %appDir%
