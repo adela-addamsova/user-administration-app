@@ -2,18 +2,21 @@
 
 declare(strict_types=1);
 
+namespace App\Model;
 
 use Nette\Database\Explorer;
 use Nette\Security\Passwords;
 use Nette\Security\IIdentity;
 use Nette\Security\AuthenticationException;
 use Nette\Security\SimpleIdentity;
+use Nette\Security\Authenticator;
+use App\Model\UserErrorMessages;
 
 /** 
  * Class Authenticator 
  * Implements user authentication
  */
-class Authenticator implements Nette\Security\Authenticator
+class UserAuthenticator implements Authenticator
 {
     private Explorer $database;
     private Passwords $passwords;
@@ -25,7 +28,8 @@ class Authenticator implements Nette\Security\Authenticator
      * @param Passwords $passwords
      */
 
-    public function __construct(Explorer $database, Passwords $passwords)
+    public function __construct(Explorer $database, Passwords $passwords
+    )
     {
         $this->database = $database;
         $this->passwords = $passwords;
@@ -44,16 +48,16 @@ class Authenticator implements Nette\Security\Authenticator
     {
         $user = $this->database->table('users')->where('login', $login)->fetch();
 
-        if($user && $user->deleted_at !== NULL) {
-            throw new AuthenticationException('Deleted user');
+        if ($user && $user->deleted_at !== NULL) {
+            throw new AuthenticationException(UserErrorMessages::DELETED_USER);
         }
 
         if (!$user) {
-            throw new AuthenticationException('Invalid login');
+            throw new AuthenticationException(UserErrorMessages::INVALID_LOGIN);
         }
 
         if (!$this->passwords->verify($password, $user->password)) {
-            throw new AuthenticationException('Invalid password');
+            throw new AuthenticationException(UserErrorMessages::INVALID_PASSWORD);
         }
         return new SimpleIdentity($user->id, null, $user->toArray());
     }
