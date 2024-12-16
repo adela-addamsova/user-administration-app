@@ -8,6 +8,7 @@ use App\Model\UserService;
 use Nette\Application\UI\Presenter;
 use Ublaboo\DataGrid\DataGrid;
 use Ublaboo\DataGrid\Column\Action\Confirmation\CallbackConfirmation;
+use App\Model\UserErrorMessages;
 
 /**
  * Class DashboardPresenter
@@ -37,8 +38,8 @@ class DashboardPresenter extends Presenter
     {
         parent::startup();
 
-        if (!$this->userService->checkLoginStatus()) {
-            $this->flashMessage('You must be logged in to access this section.', 'warning');
+        if (!$this->userService->getUser()->loggedIn) {
+            $this->flashMessage(UserErrorMessages::NOT_LOGGED_IN, 'warning');
             $this->redirect('Login:login');
         }
     }
@@ -80,15 +81,15 @@ class DashboardPresenter extends Presenter
             ->setSortable();
 
         $grid->addFilterText('id', 'Search id')
-            ->addAttribute('placeholder', 'Search by id');
+            ->addAttribute('placeholder', ' Search by id');
         $grid->addFilterText('login', 'Search login')
-            ->addAttribute('placeholder', 'Search by username');
+            ->addAttribute('placeholder', ' Search by username');
         $grid->addFilterText('firstname', 'Search firstname')
-            ->addAttribute('placeholder', 'Search by firstname');
+            ->addAttribute('placeholder', ' Search by firstname');
         $grid->addFilterText('lastname', 'Search lastname')
-            ->addAttribute('placeholder', 'Search by lastname');
+            ->addAttribute('placeholder', ' Search by lastname');
         $grid->addFilterText('email', 'Search email')
-            ->addAttribute('placeholder', 'Search by email');
+            ->addAttribute('placeholder', ' Search by email');
 
         $grid->addAction('edit', 'Edit', 'editUser!')
             ->setTitle('Edit')
