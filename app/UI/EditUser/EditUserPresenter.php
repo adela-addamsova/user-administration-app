@@ -2,10 +2,11 @@
 
 namespace App\UI\EditUser;
 
+use App\Model\UserErrorMessages;
 use App\Model\UserService;
 use Nette\Application\UI\Form;
 use Nette\Application\UI\Presenter;
-use Nette\Security\Passwords;
+
 
 /**
  * Class EditUserPresenter
@@ -34,8 +35,8 @@ class EditUserPresenter extends Presenter
     {
         parent::startup();
 
-        if (!$this->userService->checkLoginStatus()) {
-            $this->flashMessage('You must be logged in to edit users.', 'warning');
+        if (!$this->user->loggedIn) {
+            $this->flashMessage(UserErrorMessages::NOT_LOGGED_IN, 'warning');
             $this->redirect('Login:login');
         }
     }
@@ -49,14 +50,14 @@ class EditUserPresenter extends Presenter
     public function actionEditUser($id): void
     {
         if (!$id) {
-            $this->flashMessage('Invalid user ID.', 'error');
+            $this->flashMessage(UserErrorMessages::INVALID_LOGIN, 'error');
             $this->redirect('Dashboard:dashboard');
             return;
         }
 
         $user = $this->userService->getUserById($id);
         if (!$user) {
-            $this->flashMessage('User not found.', 'error');
+            $this->flashMessage(UserErrorMessages::INVALID_LOGIN, 'error');
             $this->redirect('Dashboard:dashboard');
             return;
         }
@@ -79,12 +80,6 @@ class EditUserPresenter extends Presenter
     {
         $id = $this->getParameter('id');
         $user = $this->userService->getUserById($id);
-
-        if (!$user) {
-            $this->flashMessage('User not found.', 'error');
-            $this->redirect('Dashboard:dashboard');
-            return false;
-        }
 
         $form = new Form;
 
@@ -131,42 +126,40 @@ class EditUserPresenter extends Presenter
         $id = $this->getParameter('id');
         $user = $this->userService->getUserById($id);
         if (!$user) {
-            $this->flashMessage('User not found.', 'danger');
+            $this->flashMessage(UserErrorMessages::INVALID_LOGIN, 'danger');
             $this->redirect('Dashboard:dashboard');
             return;
         }
 
         $updateData = [];
-        if ($user->login !== $values->login) {
-            if ($this->userService->isLoginTaken($values->login)) {
-                $this->flashMessage('Username is already taken!', 'danger');
-                return;
-            }
-            $updateData['login'] = $values->login;
-        }
 
-        if ($user->email !== $values->email) {
-            if ($this->userService->isEmailTaken($values->email)) {
-                $this->flashMessage('Email is already taken!', 'danger');
-                return;
-            }
-            $updateData['email'] = $values->email;
+        if ($this->userService->isLoginTaken($values->login)) {
+            $this->flashMessage(UserErrorMessages::LOGIN_TAKEN, 'danger');
+            return;
         }
+        $updateData['login'] = $values->login;
 
-        if ($user->firstname !== $values->firstname) {
-            $updateData['firstname'] = $values->firstname;
-        }
 
-        if ($user->lastname !== $values->lastname) {
-            $updateData['lastname'] = $values->lastname;
+        if ($this->userService->isEmailTaken($values->email)) {
+            $this->flashMessage(UserErrorMessages::EMAIL_TAKEN, 'danger');
+            return;
         }
+        $updateData['email'] = $values->email;
+        $updateData['firstname'] = $values->firstname;
+        $updateData['lastname'] = $values->lastname;
+        
 
         if (!empty($values->password)) {
-            $password = new Passwords();
+            $password = $this->userService->getPassword();
+
+            if (!$this->userService->isPasswordValid($values->password)) {
+                $this->flashMessage(UserErrorMessages::WRONG_PASSWORD_FORMAT, 'danger');
+                return;
+            }
 
             $hashedPassword = $password->hash($values->password);
 
-            $updateData['password']  = $hashedPassword;
+            $updateData['password'] = $hashedPassword;
         }
 
         if (!empty($updateData)) {
@@ -175,15 +168,5 @@ class EditUserPresenter extends Presenter
         } else {
             $this->flashMessage('No changes made.', 'info');
         }
-    }
-
-    /**
-     * Render Edit User
-     * Sets a template variable indicating whether the user is logged in
-     * @return void 
-     */
-    public function renderEditUser(): void
-    {
-        $this->template->isLoggedIn = $this->user->isLoggedIn();
     }
 }
