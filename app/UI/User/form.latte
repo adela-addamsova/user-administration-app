@@ -1,4 +1,4 @@
-{form signUpForm}
+<form n:name="$form">
 {foreach $form->errors as $error}
    <span>{$error}</span>
 {/foreach}
@@ -7,45 +7,52 @@
   <div class="form-group d-flex justify-content-between 
   align-items-center mb-4">
       {label id, class => "form-label w-25" /} 
-      {input id, class => "form-control w-75", value=>"{$id}"}
+      {input id, class => "form-control w-75"}
   </div>
 {/if}
   <div class="form-group d-flex justify-content-between 
   align-items-center mb-4">
       {label login, class => "form-label w-25" /} 
-      {input login, class => "form-control w-75", value => (isset($defaults['login']) ? $defaults['login'] : '')}
+      {input login, class => "form-control w-75"}
   </div>
 
   <div class="form-group d-flex justify-content-between 
   align-items-center mb-4">
     {label firstname, class => "form-label w-25" /} 
-    {input firstname, class => "form-control w-75", value => (isset($defaults['firstname']) ? $defaults['firstname'] : '')}
+    {input firstname, class => "form-control w-75"}
   </div>
 
   <div class="form-group d-flex justify-content-between 
   align-items-center mb-4">
     {label lastname, class => "form-label w-25" /} 
-    {input lastname, class => "form-control w-75", value => (isset($defaults['lastname']) ? $defaults['lastname'] : '')}
+    {input lastname, class => "form-control w-75"}
   </div>
 
   <div class="form-group d-flex justify-content-between 
   align-items-center mb-4">
     {label email, class => "form-label w-25" /} 
-    {input email, class => "form-control w-75", value => (isset($defaults['email']) ? $defaults['email'] : '')}
+    {input email, class => "form-control w-75"}
   </div>
 
+  {if $isSignupActive || $isCreateActive}
   <div class="form-group d-flex justify-content-between
    align-items-center mb-4">
     {label password, class => "form-label w-25" /} 
     {input password, class => "form-control w-75", 
-    placeholder => '*********'}
+    placeholder => '*********', required => "required"}
   </div>
 
-  {if $isSignupActive || $isCreateActive}
     <div class="form-group d-flex justify-content-between 
   align-items-center mb-4 text-wrap">
     {label passwordCheck, class => "form-label w-25" /} 
     {input passwordCheck, class => "form-control w-75", 
+    placeholder => '*********'}
+  </div>
+  {else}
+    <div class="form-group d-flex justify-content-between
+   align-items-center mb-4">
+    {label password, class => "form-label w-25" /} 
+    {input password, class => "form-control w-75", 
     placeholder => '*********'}
   </div>
   {/if}
@@ -53,4 +60,4 @@
   <div>
     {input send, class => "btn btn-outline-light px-5 mb-3"}
   </div>
-{/form}
+</form>
