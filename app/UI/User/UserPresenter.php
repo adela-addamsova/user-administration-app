@@ -36,7 +36,7 @@ class UserPresenter extends Presenter
      */
     public function startup()
     {
-        parent::startup();       
+        parent::startup();
 
         if (!$this->user->loggedIn && $this->isLinkCurrent('User:create')) {
             $this->flashMessage(UserErrorMessages::NOT_LOGGED_IN, 'warning');
@@ -54,19 +54,19 @@ class UserPresenter extends Presenter
      * @return Form - Returns an instance of Nette\Application\UI\Form configured with user registration fields and validation
      */
 
-     protected function createComponentSignUpForm()
-     {
+    protected function createComponentSignUpForm()
+    {
         $isEditMode = false;
-        
-        $signUpForm = $this->formFactory->createComponentForm( $isEditMode);
 
-        
+        $signUpForm = $this->formFactory->createComponentForm($isEditMode);
+
+
         $signUpForm->onSuccess[] = [$this, 'signUpFormSuccess'];
 
         return $signUpForm;
-     }
+    }
 
-     public function signUpFormSuccess(Form $form, $values): void
+    public function signUpFormSuccess(Form $form, $values): void
     {
         try {
             $data = [
@@ -76,20 +76,20 @@ class UserPresenter extends Presenter
                 'email' => $values->email,
                 'password' => $values->password
             ];
-    
+
             $registrationResult = $this->userService->registerUser($data);
-    
+
             if ($registrationResult === 'success') {
                 $this->registrationSuccessful = true;
                 $this->flashMessage('Registration successful!', 'success');
                 $this->redirect('this');
             }
-        } catch(UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             if (strpos($e->getMessage(), 'email') !== false) {
                 $form->addError(UserErrorMessages::EMAIL_TAKEN);
             } elseif (strpos($e->getMessage(), 'login') !== false) {
                 $form->addError(UserErrorMessages::LOGIN_TAKEN);
-            } 
+            }
         }
     }
 
@@ -101,18 +101,19 @@ class UserPresenter extends Presenter
      */
     public function actionEditUser($id): void
     {
+        $user = $this->userService->getUserById($id);
         if (!$id) {
             $this->flashMessage(UserErrorMessages::INVALID_LOGIN, 'error');
             $this->redirect('Dashboard:');
             return;
         }
 
-        $user = $this->userService->getUserById($id);
         if (!$user) {
             $this->flashMessage(UserErrorMessages::INVALID_LOGIN, 'error');
             $this->redirect('Dashboard:');
             return;
         }
+
     }
 
     /**
@@ -121,32 +122,19 @@ class UserPresenter extends Presenter
      * @return Form - Returns an instance of Nette\Application\UI\Form configured with user editing fields and validation
      */
     protected function createComponentEditForm(): bool|Form
-    {
-        $isEditMode = $this->getParameter('id') ? true : false;
+    {   
         $id = $this->getParameter('id');
         $user = $this->userService->getUserById($id);
 
-        $editForm = $this->formFactory->createComponentForm($isEditMode);
-        $editForm->addText('id', 'Id:')
-            ->setRequired('This is the user ID.')
-            ->setDefaultValue($id)
-            ->setDisabled();
+        $editForm = $this->formFactory->createComponentForm();
 
-        $editForm->addSubmit('save', 'Save Changes');
+        $editForm->addSubmit('send', 'Save Changes');
 
-        $editForm->setDefaults([
-            'id' => $id,
-            'login' => $user->login,
-            'email' => $user->email,
-            'firstname' => $user->firstname,
-            'lastname' => $user->lastname,
-        ]);
-
-        $editForm->onSuccess[] = [$this, 'editFormSuccess'];
-
+        $editForm->onSuccess[] =  [$this, 'editFormSuccess'];
+        
         return $editForm;
     }
-    
+
     /**
      * Edit Form Succeeded
      * Handles the successful submission of the edit form. Validates the input, checks for existing logins and emails, hashes the password if provided, updates the user data, and displays an appropriate message based on the operation result
@@ -154,7 +142,7 @@ class UserPresenter extends Presenter
      * @param \stdClass $values - The submitted form values
      * @return void 
      */
-    public function editFormSucceeded(Form $form, $values): void
+    public function editFormSuccess(Form $form, $values): void
     {
         $id = $this->getParameter('id');
         $user = $this->userService->getUserById($id);
@@ -165,6 +153,8 @@ class UserPresenter extends Presenter
         }
 
         $updateData = [];
+
+        $updateData['id'] = $id;
 
         if ($this->userService->isLoginTaken($values->login)) {
             $this->flashMessage(UserErrorMessages::LOGIN_TAKEN, 'danger');
@@ -177,12 +167,12 @@ class UserPresenter extends Presenter
             $this->flashMessage(UserErrorMessages::EMAIL_TAKEN, 'danger');
             return;
         }
-        
+
         $updateData['email'] = $values->email;
         $updateData['firstname'] = $values->firstname;
         $updateData['lastname'] = $values->lastname;
-        
-       
+
+
         if (!empty($values->password)) {
             $password = $this->userService->getPassword();
 
@@ -196,16 +186,12 @@ class UserPresenter extends Presenter
             $updateData['password'] = $hashedPassword;
         }
 
-        
         if (!empty($updateData)) {
             $this->userService->updateUser($id, $updateData);
             $this->flashMessage('User updated successfully!', 'success');
-            bdump($user);
         } else {
             $this->flashMessage('No changes made.', 'info');
         }
-
-        
     }
 
     /**
@@ -216,6 +202,9 @@ class UserPresenter extends Presenter
     public function renderSignUp(): void
     {
         $this->template->registrationSuccessful = $this->registrationSuccessful;
+        $this->template->isCreateActive = $this->isLinkCurrent('User:create');
+        $this->template->isSignupActive = $this->isLinkCurrent('User:signup');
+        $this->template->isEditActive = $this->isLinkCurrent('User:edit');
     }
 
     /**
@@ -223,8 +212,30 @@ class UserPresenter extends Presenter
      * Sets template variables for the registration status 
      * @return void 
      */
-    public function renderCreate(): void
+    public function renderEdit(): void
     {
         $this->template->registrationSuccessful = $this->registrationSuccessful;
+        $this->template->isCreateActive = $this->isLinkCurrent('User:create');
+        $this->template->isSignupActive = $this->isLinkCurrent('User:signup');
+        $this->template->isEditActive = $this->isLinkCurrent('User:edit');
+        $id = $this->getParameter('id');
+        $this->template->id = $id;
+        $user = $this->userService->getUserById($id);
+        $defaults = [
+            'id' => $user->id,
+            'login' => $user->login,
+            'email' => $user->email,
+            'firstname' => $user->firstname,
+            'lastname' => $user->lastname,
+        ];
+        $this->template->defaults = $defaults;
+    }
+
+    public function renderCreate() {
+        $this->template->registrationSuccessful = $this->registrationSuccessful;
+        $this->template->isCreateActive = $this->isLinkCurrent('User:create');
+        $this->template->isSignupActive = $this->isLinkCurrent('User:signup');
+        $this->template->isEditActive = $this->isLinkCurrent('User:edit');
+        
     }
 }
