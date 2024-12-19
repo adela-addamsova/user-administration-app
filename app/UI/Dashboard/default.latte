@@ -29,7 +29,9 @@
 <script type="text/javascript">
 $(document).ready(function () {
     $('.delete').on('click', function (e) {
-        var confirmMessage = 'Are you sure you want to delete this user?';
+        if(confirm(confirmMessage)) {
+          let userId = $(this).data('id');
+        }
 
         if (!confirm(confirmMessage)) {
             e.preventDefault();
