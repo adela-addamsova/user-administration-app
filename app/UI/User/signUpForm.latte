@@ -1,4 +1,8 @@
 {form signUpForm}
+{foreach $form->errors as $error}
+   <span>{$error}</span>
+{/foreach}
+
   <div class="form-group d-flex justify-content-between 
   align-items-center mb-4">
       {label login, class => "form-label w-25" /} 
