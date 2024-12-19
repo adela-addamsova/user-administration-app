@@ -51,9 +51,7 @@ class FormFactory
 
         $form->addPassword('passwordCheck', 'Confirm password:')
             ->setHtmlAttribute('placeholder', '************')
-            ->setRequired()
             ->addRule(Form::Equal, UserErrorMessages::NO_PASSWORD_MATCH, $form['password']);
-        $form->addSubmit('send', 'Save');
 
         return $form;
     }
