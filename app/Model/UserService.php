@@ -131,25 +131,34 @@ class UserService
     }
 
     /**
-     * Is Login Taken
-     * Checks if a given login is already taken by another user
-     * @param string $login - Login to check
-     * @return bool - Returns true if the login is taken, false otherwise
-     */
-    public function isLoginTaken($login): bool
-    {
-        return (bool) $this->database->table('users')->where('login', $login)->fetch();
-    }
-
-    /**
      * Is Email Taken 
      * Checks if a given email is already taken by another user
      * @param string $email - Email to check
      * @return bool - Returns true if the email is taken, false otherwise
      */
-    public function isEmailTaken($email): bool
+    public function isEmailTaken($email, int $userId = null): bool
     {
-        return (bool) $this->database->table('users')->where('email', $email)->fetch();
+        $query = $this->database->table('users')->where('email', $email);
+        if ($userId !== null) {
+            $query->where('id != ?', $userId);
+            // SELECT * FROM users WHERE email = 'user's email' AND id != 1;
+        }
+        return $query->count() > 0;
+    }
+
+    /**
+     * Is Login Taken
+     * Checks if a given login is already taken by another user
+     * @param string $login - Login to check
+     * @return bool - Returns true if the login is taken, false otherwise
+     */
+    public function isLoginTaken($login, int $userId = null): bool
+    {
+        $query = $this->database->table('users')->where('email', $login);
+        if ($userId !== null) {
+            $query->where('id != ?', $userId);
+        }
+        return $query->count() > 0;
     }
 
     /**
