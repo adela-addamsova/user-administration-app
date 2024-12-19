@@ -1,10 +1,10 @@
 # Ignore temporary files and cache
 temp/**
-log/
+/logs/* 
+!/logs/
 
 # Ignore Composer dependencies
 /vendor/
-/composer.lock
 
 # Ignore environment configuration files
 /.env
