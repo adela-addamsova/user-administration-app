@@ -38,9 +38,9 @@ class LoginPresenter extends Presenter
     {
         parent::startup();
 
-        if ($this->userService->getUser()->loggedIn) {
+        if ($this->getUser()->loggedIn) {
             $this->flashMessage('This seccion is only for users that are not logged in.', 'warning');
-            $this->redirect('Dashboard:dashboard');
+            $this->redirect('Dashboard:');
         }
     }
 
@@ -75,7 +75,7 @@ class LoginPresenter extends Presenter
     {
         try {
             $this->userService->login($formValues->login, $formValues->password, $formValues->remember);
-            $this->redirect('Dashboard:dashboard');
+            $this->redirect('Dashboard:');
         } catch (AuthenticationException $e) {
             switch ($e->getMessage()) {
 
