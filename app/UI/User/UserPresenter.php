@@ -59,7 +59,7 @@ class UserPresenter extends Presenter
     {
         $signUpForm = $this->formFactory->createComponentForm();
 
-
+        $signUpForm->addSubmit('send', 'Create User');
         $signUpForm->onSuccess[] = [$this, 'signUpFormSuccess'];
 
         return $signUpForm;
@@ -141,7 +141,12 @@ class UserPresenter extends Presenter
             'email' => $user->email,
         ]);
 
+        $editForm->addSubmit('send', 'Edit User');
+
+
         $editForm->onSuccess[] =  [$this, 'editFormSuccess'];
+
+        $editForm->setAction($this->link('User:edit', ['id' => $id]));
 
         return $editForm;
     }
@@ -157,6 +162,7 @@ class UserPresenter extends Presenter
     {
         $id = $this->getParameter('id');
         $user = $this->userService->getUserById($id);
+        
         if (!$user) {
             $form->addError(UserErrorMessages::INVALID_LOGIN);
             $this->redirect('Dashboard:');
@@ -165,46 +171,52 @@ class UserPresenter extends Presenter
 
         $updateData = [];
 
-        $updateData['id'] = $this->getParameter('id');
-
-        if ($this->userService->isLoginTaken($values->login)) {
+        if ($this->userService->isLoginTaken($values->login, $user->id)) {
             $this->flashMessage(UserErrorMessages::LOGIN_TAKEN, 'danger');
             return;
         }
-        $updateData['login'] = $values->login;
 
+        if ($values->login !== $user->login) {
+            $updateData['login'] = $values->login;
+        }
 
-        if ($this->userService->isEmailTaken($values->email)) {
+        if ($this->userService->isEmailTaken($values->email, $user->id)) {
             $this->flashMessage(UserErrorMessages::EMAIL_TAKEN, 'danger');
             return;
         }
 
-        $updateData['email'] = $values->email;
-        $updateData['firstname'] = $values->firstname;
-        $updateData['lastname'] = $values->lastname;
+        if ($values->email !== $user->email) {
+            $updateData['email'] = $values->email;
+        }
 
+        if ($values->firstname !== $user->firstname) {
+            $updateData['firstname'] = $values->firstname;
+        }
+
+        if ($values->lastname !== $user->lastname) {
+            $updateData['lastname'] = $values->lastname;
+        }
 
         if (!empty($values->password)) {
             $password = $this->userService->getPassword();
-
             if (!$this->userService->isPasswordValid($values->password)) {
                 $this->flashMessage(UserErrorMessages::WRONG_PASSWORD_FORMAT, 'danger');
                 return;
             }
-
             $hashedPassword = $password->hash($values->password);
-
-            $updateData['password'] = $hashedPassword;
+            if ($hashedPassword !== $user->password) {
+                $updateData['password'] = $hashedPassword;
+            }
         }
 
         if (!empty($updateData)) {
             $this->userService->updateUser($id, $updateData);
             $this->flashMessage('User updated successfully!', 'success');
-            $this->redirect('this');
         } else {
             $this->flashMessage('No changes made.', 'info');
-            $this->redirect('this');
         }
+        
+        // $this->redirect('this', ['id' => $id]);
     }
 
     /** 
