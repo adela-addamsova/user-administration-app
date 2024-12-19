@@ -46,9 +46,9 @@
   align-items-center mb-4 text-wrap">
     {label passwordCheck, class => "form-label w-25" /} 
     {input passwordCheck, class => "form-control w-75", 
-    placeholder => '*********'}
+    placeholder => '*********', required => "required"}
   </div>
-  {else}
+  {elseif $isEditActive}
     <div class="form-group d-flex justify-content-between
    align-items-center mb-4">
     {label password, class => "form-label w-25" /} 
@@ -56,8 +56,7 @@
     placeholder => '*********'}
   </div>
   {/if}
-  
-  <div>
+    <div>
     {input send, class => "btn btn-outline-light px-5 mb-3"}
   </div>
 </form>
