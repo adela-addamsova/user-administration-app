@@ -3,6 +3,7 @@ services:
 	- App\Model\UserAuthenticator
 	- App\Model\UserService
 	- App\Model\UserErrorMessages
+	- App\Components\FormFactory
 
 search:
 	-	in: %appDir%
