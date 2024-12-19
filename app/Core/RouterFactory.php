@@ -14,8 +14,13 @@ class RouterFactory
         $router = new RouteList;
 		
         $router[] = new Route('/', 'Login:login');
-        $router[] = new Route('/<presenter>/<action>');
-        
+      
+        $router[] = new Route('/<presenter>/<action>[/<id>]', [
+            'presenter' => 'Login',
+            'action' => 'default',
+            'id' => null,
+        ]);
+  
         return $router;
     }
 }
