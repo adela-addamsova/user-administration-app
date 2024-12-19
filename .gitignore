@@ -1,7 +1,7 @@
 # Ignore temporary files and cache
 temp/**
 /logs/* 
-!/logs/
+!/logs/.gitkeep
 
 # Ignore Composer dependencies
 /vendor/
