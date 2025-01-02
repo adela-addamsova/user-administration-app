@@ -4,7 +4,7 @@
 <section class="centered">
   <div class="container py-5 w-100 h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
-      <div class="w-100">
+      <div class="w-100" id="flash-container">
         <div
           class="alert alert-{$flash->type} mx-auto"
           role="alert"
@@ -13,31 +13,18 @@
         >
           {$flash->message}
         </div>
+      </div>
 
-        <div class="mb-4 text-center">
+      <div class="mb-4 text-center">
           <h1>Dashboard</h1>
-        </div>
+      </div>
 
         {control simpleGrid}
-
-      </div>
+        
     </div>
   </div>
 </section>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script type="text/javascript">
-$(document).ready(function () {
-    $('.delete').on('click', function (e) {
-        if(confirm(confirmMessage)) {
-          let userId = $(this).data('id');
-        }
-
-        if (!confirm(confirmMessage)) {
-            e.preventDefault();
-        }
-    });
-});
-</script>
 
 {/block}

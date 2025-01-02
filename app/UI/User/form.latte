@@ -1,62 +1,115 @@
-<form n:name="$form">
-{foreach $form->errors as $error}
-   <span>{$error}</span>
-{/foreach}
+<section>
+  <div class="container py-5 w-100 h-75">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+        <div
+          class="alert alert-{$flash->type} mx-auto"
+          role="alert"
+          n:if="$flashes"
+          n:foreach="$flashes as $flash"
+        >
+          {$flash->message}
+        </div>
 
-{if $isEditActive}
-  <div class="form-group d-flex justify-content-between 
-  align-items-center mb-4">
-      {label id, class => "form-label w-25" /} 
-      {input id, class => "form-control w-75"}
-  </div>
-{/if}
-  <div class="form-group d-flex justify-content-between 
-  align-items-center mb-4">
-      {label login, class => "form-label w-25" /} 
-      {input login, class => "form-control w-75"}
-  </div>
+        <form n:name="$form">
+          <div n:foreach="$form->errors as $error" class="alert alert-danger">{$error}</div>
 
-  <div class="form-group d-flex justify-content-between 
-  align-items-center mb-4">
-    {label firstname, class => "form-label w-25" /} 
-    {input firstname, class => "form-control w-75"}
-  </div>
+          <div class="card bg-dark text-white" style="border-radius: 1rem">
+            <div class="card-body p-5 text-center w-100">
+              <div class="mb-md-2 mt-md-2 pb-3">
+                <h1 class="fw-bold mb-5 text-uppercase">{$title}</h1>
 
-  <div class="form-group d-flex justify-content-between 
-  align-items-center mb-4">
-    {label lastname, class => "form-label w-25" /} 
-    {input lastname, class => "form-control w-75"}
-  </div>
+                <div
+                  n:if="$isEditActive"
+                  class="form-group d-flex justify-content-between align-items-center mb-4"
+                >
+                  {label id, class => "form-label w-25" /} {input id, class =>
+                  "form-control w-75"}
+                </div>
+               
+                <div
+                  class="form-group d-flex justify-content-between align-items-center mb-4"
+                >
+                  {label login, class => "form-label w-25" /} {input login,
+                  class => "form-control w-75"}
+                </div>
 
-  <div class="form-group d-flex justify-content-between 
-  align-items-center mb-4">
-    {label email, class => "form-label w-25" /} 
-    {input email, class => "form-control w-75"}
-  </div>
+                <div
+                  class="form-group d-flex justify-content-between align-items-center mb-4"
+                >
+                  {label firstname, class => "form-label w-25" /} {input
+                  firstname, class => "form-control w-75"}
+                </div>
 
-  {if $isSignupActive || $isCreateActive}
-  <div class="form-group d-flex justify-content-between
-   align-items-center mb-4">
-    {label password, class => "form-label w-25" /} 
-    {input password, class => "form-control w-75", 
-    placeholder => '*********', required => "required"}
-  </div>
+                <div
+                  class="form-group d-flex justify-content-between align-items-center mb-4"
+                >
+                  {label lastname, class => "form-label w-25" /} {input
+                  lastname, class => "form-control w-75"}
+                </div>
 
-    <div class="form-group d-flex justify-content-between 
-  align-items-center mb-4 text-wrap">
-    {label passwordCheck, class => "form-label w-25" /} 
-    {input passwordCheck, class => "form-control w-75", 
-    placeholder => '*********', required => "required"}
+                <div
+                  class="form-group d-flex justify-content-between align-items-center mb-4"
+                >
+                  {label email, class => "form-label w-25" /} {input email,
+                  class => "form-control w-75"}
+                </div>
+
+                <div
+                  n:if="$isSignupActive || $isCreateActive"
+                  class="form-group d-flex justify-content-between align-items-center mb-4"
+                >
+                  {label password, class => "form-label w-25" /} {input
+                  password, class => "form-control w-75", placeholder =>
+                  '*********', required => "required"}
+                </div>
+
+                <div
+                  n:if="$isSignupActive || $isCreateActive"
+                  class="form-group d-flex justify-content-between align-items-center mb-4 text-wrap"
+                >
+                  {label passwordCheck, class => "form-label w-25" /} {input
+                  passwordCheck, class => "form-control w-75", placeholder =>
+                  '*********', required => "required"}
+                </div>
+                
+                <div
+                  n:if="$isEditActive"
+                  class="form-group d-flex justify-content-between align-items-center mb-4"
+                >
+                  {label password, class => "form-label w-25" /} {input
+                  password, class => "form-control w-75", placeholder =>
+                  '*********'}
+                </div>
+            
+                <div>
+                  {input send, class => "btn btn-outline-light px-5 mb-3"}
+                </div>
+
+                {if $isSignupActive}
+                <div>
+                  {if $registrationSuccessful === true}
+                  <p class="mb-0">
+                    Registration succesful!
+                    <a n:href="Login:default" class="text-white-50 fw-bold"
+                      ><span style="color: #55d610">Login</span></a
+                    >
+                  </p>
+                  {else}
+                  <p class="mb-0">
+                    Already have an account?
+                    <a n:href="Login:default" class="text-white-50 fw-bold"
+                      ><span style="color: #55d610">Login</span></a
+                    >
+                  </p>
+                  {/if}
+                </div>
+                {/if}
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
-  {elseif $isEditActive}
-    <div class="form-group d-flex justify-content-between
-   align-items-center mb-4">
-    {label password, class => "form-label w-25" /} 
-    {input password, class => "form-control w-75", 
-    placeholder => '*********'}
-  </div>
-  {/if}
-    <div>
-    {input send, class => "btn btn-outline-light px-5 mb-3"}
-  </div>
-</form>
+</section>

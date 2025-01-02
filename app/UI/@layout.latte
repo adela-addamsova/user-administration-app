@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>{block title}{/block}</title>
+    <title>{include title}</title>
     {* Favicon *}
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
     {* Bootstrap icons *}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     {* Core theme CSS (includes Bootstrap) *}
     <link href="/css/styles.css" rel="stylesheet" />
     {* Font *}
@@ -25,9 +26,7 @@
           <a class="navbar-brand">User Administration</a>
         </div>
 
-        
-        {if $user->loggedIn}
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <ul n:if='$user->loggedIn' class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item">
             <a class="nav-link"
               n:href="User:create"
@@ -38,7 +37,7 @@
           <li class="nav-item">
             <a class="nav-link"
               n:href="Dashboard:"
-              style="color: #55d610; padding-left: 2rem; padding-right: 2rem">
+              style="color:#55d610; padding-left: 2rem; padding-right: 2rem">
               Dashboard</a>
           </li>
 
@@ -49,11 +48,10 @@
               Logout</a>
           </li>
         </ul>
-        {/if}
       </nav>
     </main>
 
-  {block content} {/block}
+  {include content}
 
   </body>
 
