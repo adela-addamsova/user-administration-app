@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\UI\Dashboard;
 
-use App\Model\UserService;
+use App\Components\RequireLoggedUser;
+use App\Model\Interfaces\ManageUserInterface;
+use App\Model\Interfaces\UserDataInterface;
 use Nette\Application\UI\Presenter;
 use Ublaboo\DataGrid\DataGrid;
-use Ublaboo\DataGrid\Column\Action\Confirmation\CallbackConfirmation;
-use App\Model\UserErrorMessages;
 
 /**
  * Class DashboardPresenter
@@ -16,19 +16,22 @@ use App\Model\UserErrorMessages;
  */
 class DashboardPresenter extends Presenter
 {
-    private UserService $userService;
+    private ManageUserInterface $manageUser;
+    private UserDataInterface $userData;
 
     /** 
      * Constructor
      * Initializes the DashboardPresenter with user service dependency
-     * @param UserService $userService - User service for managing user-related operations
+     * @param ManageUserInterface $manageUser - User service for managing user-related operations
      */
-    public function __construct(UserService $userService)
+    public function __construct(ManageUserInterface $manageUser, UserDataInterface $userData)
     {
         parent::__construct();
-        $this->userService = $userService;
+        $this->manageUser = $manageUser;
+        $this->userData = $userData;
     }
 
+    use RequireLoggedUser;
     /**
      * Startup
      * Checks if the user is logged in and redirects to the login page if not authenticated
@@ -38,10 +41,7 @@ class DashboardPresenter extends Presenter
     {
         parent::startup();
 
-        if (!$this->userService->getUser()->loggedIn) {
-            $this->flashMessage(UserErrorMessages::NOT_LOGGED_IN, 'warning');
-            $this->redirect('Login:login');
-        }
+        $this->requireUserLogged();
     }
 
     /**
@@ -51,9 +51,9 @@ class DashboardPresenter extends Presenter
      */
     public function actionLogout()
     {
-        $this->userService->logoutUser();
-        $this->flashMessage('Logout successful', 'success');
-        $this->redirect('Login:login');
+        $this->manageUser->logoutUser();
+        $this->flashMessage('Logout successful!', 'success');
+        $this->redirect('Login:');
     }
 
     /**
@@ -67,7 +67,7 @@ class DashboardPresenter extends Presenter
 
         $grid->setCustomPaginatorTemplate(__DIR__ . '/grid/data_grid.paginator.latte');
 
-        $grid->setDataSource($this->userService->getUsersData());
+        $grid->setDataSource($this->userData->getUsersData());
 
         $grid->addColumnText('id', 'Id')
             ->setSortable();
@@ -98,14 +98,12 @@ class DashboardPresenter extends Presenter
         $grid->addAction('delete', 'Delete', 'deleteUser!')
             ->setTitle('Delete')
             ->setClass('btn btn-xs btn-primary delete')
-            ->setConfirmation(
-                new CallbackConfirmation(
-                    function ($user):string {
-                        $confirmMessage = "Do you really want to delete user with id $user->id?";
-                        return $confirmMessage;
-                    }
-                )
-            );
+            ->setRenderer(function ($user) {
+                return '<a href="' . $this->link('deleteUser!', $user->id) . '" class="btn btn-xs btn-primary delete" 
+                data-id="' . $user->id . '" 
+                data-name="' . $user->login . '" 
+                data-message="Do you really want to delete user ' . $user->login . ' with id ' . $user->id . '?">Delete</a>';
+            });
 
         return $grid;
     }
@@ -118,7 +116,7 @@ class DashboardPresenter extends Presenter
      */
     public function handleEditUser($id)
     {
-        $this->redirect('EditUser:editUser', ['id' => $id]);
+        $this->redirect('User:edit', ['id' => $id]);
     }
 
     /**
@@ -129,14 +127,15 @@ class DashboardPresenter extends Presenter
      */
     public function handleDeleteUser($id): void
     {
-        $this->userService->deleteUser($id);
-
-        $this->flashMessage("User with id $id has been deleted.", 'success');
+        $this->manageUser->deleteUser($id);
 
         if ($this->isAjax()) {
-            $this['actionsGrid']->reload();
+            $this->sendJson([
+                'redirect' => $this->link('Dashboard:'),
+                'flashMessage' => "User with id $id has been deleted."
+            ]);
         } else {
-            $this->redirect('this');
+            $this->redirect('Dashboard:');
         }
     }
 }
