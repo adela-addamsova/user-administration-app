@@ -1,22 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Model\Factories;
 
 use App\Model\Errors\UserErrorMessages;
-use App\Model\Interfaces\ValidateUserInterface;
+use App\Model\Interfaces\UserValidationInterface;
 use Nette\Application\UI\Form;
 
 class FormFactory
 {
-    private ValidateUserInterface $validateUser;
-    public function __construct(ValidateUserInterface $validateUser)
+    private UserValidationInterface $validateUser;
+
+    /**
+     * Constructor
+     * 
+     * Initializes the FormFactory with the user validation service
+     * @param UserValidationInterface $validateUser - Service responsible for user validation logic, such as password format validation
+     */
+    public function __construct(UserValidationInterface $validateUser)
     {
         $this->validateUser = $validateUser;
     }
 
     /**
-     * Creates a form component for user operations
-     * @return Form 
+     * Create User Form Component
+     * 
+     * Builds and returns a form used for user operations such as registration or updating user details
+     * Includes fields like id, login, firstname, lastname, email, password, and password confirmation
+     * @return Form - Returns an instance of the Nette form configured for user input
      */
     public function createComponentForm(): Form
     {

@@ -6,6 +6,7 @@ namespace App\Model\Errors;
 
 /**
  * User Error Messages
+ * 
  * Class set constants that represents error messages for various actions that can occur while user logs in or registers
  */
 class UserErrorMessages {

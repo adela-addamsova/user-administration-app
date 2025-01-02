@@ -22,7 +22,8 @@ class UserAuthenticator implements Authenticator
     private Passwords $passwords;
 
     /** 
-     * Constructor 
+     * Constructor
+     * 
      * Initializes the Authenticator with database and password handling dependencies
      * @param Explorer $database
      * @param Passwords $passwords
@@ -38,11 +39,11 @@ class UserAuthenticator implements Authenticator
     /** 
      * Authenticate 
      *
-     * Authenticates a user by verifying their username and password against the database records
-     * @param string $username - User's username 
+     * Authenticates a user by verifying their login and password against the database records
+     * @param string $login - User's login 
      * @param string $password - User's password
      * @return IIdentity - Returns a SimpleIdentity instance representing the authenticated user
-     * @throws AuthenticationException - Throws exception if authentication fails due to invalid username or password
+     * @throws AuthenticationException - Throws exception if authentication fails due to invalid login or password
      */
     public function authenticate(string $login, string $password): IIdentity
     {

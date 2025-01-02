@@ -5,39 +5,43 @@ declare(strict_types=1);
 namespace App\UI\Dashboard;
 
 use App\Components\RequireLoggedUser;
-use App\Model\Interfaces\ManageUserInterface;
+use App\Model\Interfaces\UserManagementInterface;
 use App\Model\Interfaces\UserDataInterface;
 use Nette\Application\UI\Presenter;
 use Ublaboo\DataGrid\DataGrid;
 
 /**
  * Class DashboardPresenter
- * Handles dashboard-related operations - displaying users
+ * 
+ * Manages the dashboard view, user data display, and user operations like logout, edit, and delete
  */
 class DashboardPresenter extends Presenter
 {
-    private ManageUserInterface $manageUser;
+    private UserManagementInterface $manageUser;
     private UserDataInterface $userData;
 
     /** 
      * Constructor
-     * Initializes the DashboardPresenter with user service dependency
-     * @param ManageUserInterface $manageUser - User service for managing user-related operations
+     * 
+     * Initializes the DashboardPresenter with user management and user data services
+     * @param UserManagementInterface $manageUser - Service for managing user-related operations
+     * @param UserDataInterface $userData - Service for fetching user data to be displayed in the dashboard
      */
-    public function __construct(ManageUserInterface $manageUser, UserDataInterface $userData)
+    public function __construct(UserManagementInterface $manageUser, UserDataInterface $userData)
     {
         parent::__construct();
         $this->manageUser = $manageUser;
         $this->userData = $userData;
     }
 
-    use RequireLoggedUser;
     /**
      * Startup
-     * Checks if the user is logged in and redirects to the login page if not authenticated
-     * @return void 
+     * 
+     * Checks if the user is logged in and redirects to the login page if the user is not authenticated
+     * @return void
      */
-    public function startup()
+    use RequireLoggedUser;
+    public function startup(): void
     {
         parent::startup();
 
@@ -46,18 +50,20 @@ class DashboardPresenter extends Presenter
 
     /**
      * Action Logout
-     * Logs out the current user and redirects to the login page
-     * @return void 
+     * 
+     * Logs out the current user and redirects to the login page with a success message
+     * @return void
      */
     public function actionLogout()
     {
-        $this->manageUser->logoutUser();
+        $this->manageUser->logout();
         $this->flashMessage('Logout successful!', 'success');
         $this->redirect('Login:');
     }
 
     /**
      * Create Component Simple Grid
+     * 
      * Creates a DataGrid component for displaying users' data
      * @return DataGrid - Returns an instance of Ublaboo\DataGrid\DataGrid
      */
@@ -83,7 +89,7 @@ class DashboardPresenter extends Presenter
         $grid->addFilterText('id', 'Search id')
             ->addAttribute('placeholder', ' Search by id');
         $grid->addFilterText('login', 'Search login')
-            ->addAttribute('placeholder', ' Search by username');
+            ->addAttribute('placeholder', ' Search by login');
         $grid->addFilterText('firstname', 'Search firstname')
             ->addAttribute('placeholder', ' Search by firstname');
         $grid->addFilterText('lastname', 'Search lastname')
@@ -110,24 +116,26 @@ class DashboardPresenter extends Presenter
 
     /**
      * Handle Edit User
+     * 
      * Handles the edit action for a user and redirects to the EditUser presenter
-     * @param int|string $id - ID of the user to edit
+     * @param int $id - ID of the user to edit
      * @return void
      */
-    public function handleEditUser($id)
+    public function handleEditUser(int $id)
     {
         $this->redirect('User:edit', ['id' => $id]);
     }
 
     /**
      * Handle Delete User
-     * Handles the delete action for a user and redirects back to dashboard
-     * @param int|string $id - ID of the user to delete
+     * 
+     * Handles the request to delete a user and provides feedback via flash message and redirects
+     * @param int $id - The ID of the user to be deleted
      * @return void
      */
-    public function handleDeleteUser($id): void
+    public function handleDeleteUser(int $id): void
     {
-        $this->manageUser->deleteUser($id);
+        $this->manageUser->delete($id);
 
         if ($this->isAjax()) {
             $this->sendJson([

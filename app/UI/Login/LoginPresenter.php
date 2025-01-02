@@ -7,24 +7,26 @@ namespace App\UI\Login;
 use App\Components\RequireUnloggedUser;
 use Nette\Application\UI\Presenter;
 use Nette\Application\UI\Form;
-use App\Model\Interfaces\ManageUserInterface;
+use App\Model\Interfaces\UserManagementInterface;
 use Nette\Security\AuthenticationException;
 use App\Model\Errors\UserErrorMessages;
 
 /**
  * Class LoginPresenter
- * Handles user login functionality - form creation, validation, and user authentication
+ * 
+ * Handles the user login process, including form creation, validation, and authentication
  */
 class LoginPresenter extends Presenter
 {
-    private ManageUserInterface $manageUser;
+    private UserManagementInterface $manageUser;
 
     /** 
-     * Constructor 
-     * Initializes the LoginPresenter with user service dependency
-     * @param ManageUserInterface $manageUser - User service for managing user-related operations
+     * Constructor
+     * 
+     * Initializes the LoginPresenter with the user management service dependency
+     * @param UserManagementInterface $manageUser - Service responsible for user authentication and management
      */
-    public function __construct(ManageUserInterface $manageUser)
+    public function __construct(UserManagementInterface $manageUser)
     {
         parent::__construct();
         $this->manageUser = $manageUser;
@@ -32,18 +34,13 @@ class LoginPresenter extends Presenter
 
     /**
      * Startup
-     * Checks if the user is logged in and redirects to the dashboard page if is authenticated
-     * @return void 
+     * 
+     * This method checks if a user is already logged in and redirects to the dashboard if authenticated.
+     * Otherwise, it continues with the normal flow for unauthenticated users
+     * @return void
      */
 
-   use RequireUnloggedUser;
-
-   
-    /**
-     * Startup
-     * Checks if the user is logged in and redirects to the login page if not authenticated
-     * @return void 
-     */
+    use RequireUnloggedUser;
     public function startup()
     {
         parent::startup();
@@ -52,10 +49,11 @@ class LoginPresenter extends Presenter
     }
 
     /**
-     * Create Component Login Form 
-     * Creates a login form with fields for username, password, and a remember me checkbox
-     * Sets up a success callback for form submission
-     * @return Form - Returns an instance of Nette\Application\UI\Form configured with login fields and validation
+     * Create Component Login Form
+     * 
+     * Creates and returns a login form with fields for username, password, and a 'remember me' checkbox
+     * The form will be validated on submission, and a success callback is set up to handle the login process
+     * @return Form - A configured Nette form instance for user login
      */
     protected function createComponentLoginForm(): Form
     {
@@ -74,9 +72,11 @@ class LoginPresenter extends Presenter
 
     /**
      * Login Form Succeeded
-     * Handles the successful submission of the login form. Attempts to log in the user using the manageUser and redirects to the dashboard on success
-     * @param \stdClass $formValues - The submitted form values
-     * @return void 
+     * 
+     * Processes the form submission upon successful login. Attempts to authenticate the user with the provided credentials.
+     * On successful login, the user is redirected to the dashboard. If authentication fails, an appropriate error message is displayed.
+     * @param \stdClass $formValues - The values submitted in the login form (username, password, and remember flag)
+     * @return void
      */
     public function loginFormSucceeded(\stdClass $formValues): void
     {

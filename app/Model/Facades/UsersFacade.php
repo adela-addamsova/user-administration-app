@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Model;
+namespace App\Model\Facades;
 
-use App\Model\Interfaces\ManageUserInterface;
-use App\Model\Interfaces\ValidateUserInterface;
+use App\Model\Interfaces\UserManagementInterface;
+use App\Model\Interfaces\UserValidationInterface;
 use App\Model\Interfaces\UserDataInterface;
 use Nette\Database\Explorer;
 use Nette\Database\Table\Selection;
@@ -14,23 +14,24 @@ use Nette\Security\Passwords;
 use Nette\Http\Request;
 
 /**
- * Class UserService
- * Handles user-related operations - authentication, registration, and data management. 
+ * Class UsersFacade
+ * Handles user-related operations like authentication, registration, and data management
  */
-class UsersFacade implements UserDataInterface, ManageUserInterface, ValidateUserInterface
+class UsersFacade implements UserDataInterface, UserManagementInterface, UserValidationInterface
 {
     private Explorer $database;
     private User $user;
     private Passwords $password;
     private Request $httpRequest;
 
-
-    /** * Constructor
-     * Initializes the UserService with database, user, password, and HTTP request handling dependencies
-     * @param Explorer $database - Database explorer for interacting with the database.
-     * @param User $user - User service for managing user sessions and authentication
-     * @param Passwords $password - Service for password hashing and verification
-     * @param Request $httpRequest - HTTP request service for handling request data
+    /**
+     * UsersFacade constructor
+     * Initializes the UsersFacade with dependencies for database, user service, password hashing, and HTTP request handling
+     * 
+     * @param Explorer $database - Database service to interact with user data
+     * @param User $user - User service to manage user authentication and sessions
+     * @param Passwords $password - Password hashing and validation service
+     * @param Request $httpRequest - HTTP request service for obtaining client-side data
      */
     public function __construct(Explorer $database, User $user, Passwords $password, Request $httpRequest)
     {
@@ -41,8 +42,7 @@ class UsersFacade implements UserDataInterface, ManageUserInterface, ValidateUse
     }
 
     /**
-     * Get User
-     * @return User
+     * Get User service instance - returns the instance of the Nette\Security\User service
      */
     public function getUser(): User
     {
@@ -50,8 +50,7 @@ class UsersFacade implements UserDataInterface, ManageUserInterface, ValidateUse
     }
 
     /**
-     * Get Password
-     * @return Passwords
+     * Get Passwords service instance - returns the instance of Nette\Security\Passwords for hashing and verifying passwords
      */
     public function getPassword(): Passwords
     {
@@ -59,8 +58,7 @@ class UsersFacade implements UserDataInterface, ManageUserInterface, ValidateUse
     }
 
     /**
-     * Get Http Request
-     * @return Request
+     * Get HTTP Request service instance - returns the instance of the Nette\Http\Request service to interact with the HTTP request data
      */
     public function getHttpRequest(): Request
     {
@@ -68,28 +66,32 @@ class UsersFacade implements UserDataInterface, ManageUserInterface, ValidateUse
     }
 
     /**
-     * Login
-     * Authenticates a user with the provided username and password, sets session expiration, and logs the login attempt
-     * @param string $username - User's username
-     * @param string $password - User's password
-     * @param bool $remember - Flag indicating whether to remember the user for a longer period
+     * Login user
+     * 
+     * Authenticates the user using their login and password. It also sets session expiration and logs the login attempt
      */
-    public function login(string $username, string $password, bool $remember): void
+    public function login(string $login, string $password, bool $remember): bool
     {
-        $this->user->login($username, $password, $remember);
+        try {
+            $this->user->login($login, $password, $remember);
 
-        if ($remember) {
-            $this->user->setExpiration('14 days', false);
-        } else {
-            $this->user->setExpiration('20 minutes', true);
+            if ($remember) {
+                $this->user->setExpiration('14 days', false);
+            } else {
+                $this->user->setExpiration('20 minutes', true);
+            }
+
+            $this->logLoginAttempt();
+            return true;
+        } catch (\Exception $e) {
+            return false;
         }
-
-        $this->logLoginAttempt();
     }
 
     /** 
      * Log Login Attempt
-     * Logs the details of the user's login attempt - user ID, IP address, and time
+     * 
+     * Logs details about a user's login attempt, including the user ID and the IP address of the attempt
      */
     private function logLoginAttempt(): void
     {
@@ -102,60 +104,46 @@ class UsersFacade implements UserDataInterface, ManageUserInterface, ValidateUse
     }
 
     /** 
-     * Logout User
-     * Logs out the current user, ending their session 
+     * Logout current user, end user's session
      */
-    public function logoutUser(): void
+    public function logout(): bool
     {
-        $this->user->logout();
+        try {
+            $this->user->logout();
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**
-     * Get User's Data 
-     * Retrieves all user data from the database
-     * @return - returns a selection of all users from the database that are not deleted
+     * Get all users' data - retrieves all user data from the database table users, excluding users marked as deleted
      */
     public function getUsersData(): Selection
     {
         return $this->database->table('users')->where('deleted_at IS NULL');
     }
 
-    /** 
-     * Get User by ID 
-     * Retrieves a user's data by their ID
-     * @param int $id - The ID of the user to retrieve
-     * @return - Returns the user data as an ActiveRow object or null if the user is not found 
-     */
-    public function getUserById($id)
-    {
-        return $this->database->table('users')->get($id);
-    }
-
     /**
-     * Is Email Taken 
-     * Checks if a given email is already taken by another user
-     * @param string $email - Email to check
-     * @return bool - Returns true if the email is taken, false otherwise
+     * Check if email is already taken - verifies whether the provided email is already used by another user in the users table
+     * If updates user, excludes ID of the user that is being updated from the check
      */
     public function isEmailTaken($email, int $userId = null): bool
     {
         $query = $this->database->table('users')->where('email', $email);
         if ($userId !== null) {
             $query->where('id != ?', $userId);
-            // SELECT * FROM users WHERE email = 'user's email' AND id != 1;
         }
         return $query->count() > 0;
     }
 
     /**
-     * Is Login Taken
-     * Checks if a given login is already taken by another user
-     * @param string $login - Login to check
-     * @return bool - Returns true if the login is taken, false otherwise
+     * Check if login is already taken - verifies whether the provided login is already used by another user in the users table
+     * If updates user, excludes ID of the user that is being updated from the check
      */
     public function isLoginTaken($login, int $userId = null): bool
     {
-        $query = $this->database->table('users')->where('email', $login);
+        $query = $this->database->table('users')->where('login', $login);
         if ($userId !== null) {
             $query->where('id != ?', $userId);
         }
@@ -163,62 +151,58 @@ class UsersFacade implements UserDataInterface, ManageUserInterface, ValidateUse
     }
 
     /**
-     * Is Password Valid
-     * Validates if the provided password meets the required criteria (at least 8 characters, containing numbers, lowercase, and uppercase letters)
-     * @param string $password - Password to validate
-     * @return bool - Returns true if the password is valid
+     * Check if password is valid - validates if password meets the required criteria (at least 8 characters and include numbers, lowercase, and uppercase letters)
      */
     public function isPasswordValid($password): bool
     {
-        if (preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/', $password)) {
+        return preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/', $password) === 1;
+    }
+
+    /**
+     * Update specific user data in users table
+     */
+    public function update($id, $updateData): bool
+    {
+        try {
+            $this->database->table('users')->where('id', $id)->update($updateData);
             return true;
-        } else {
+        } catch (\Exception $e) {
             return false;
         }
     }
 
     /**
-     * Update User 
-     * Updates the user's data in the database based on the provided user ID and update data
-     * @param int|string $id - The ID of the user to update
-     * @param array $updateData - An associative array of the data to update
-     * @return void
+     * Register new user - registers a new user by verifying the login/email, hashing the password, and saving the user to the usets table
      */
-    public function updateUser($id, $updateData): void
+    public function register(array $data): bool
     {
-        $this->database->table('users')->where('id', $id)->update($updateData);
+        try {
+            $hashedPassword = $this->password->hash($data['password']);
+
+            $this->database->table('users')->insert([
+                'login' => $data['login'],
+                'firstname' => $data['firstname'],
+                'lastname' => $data['lastname'],
+                'email' => $data['email'],
+                'password' => $hashedPassword,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**
-     * Register User
-     * Registers a new user by checking if the login or email already exists, 
-     * hashing the password, and inserting the user into the database
-     * @param array $data - An associative array containing the user's data
-     * @return bool - Returns true if the registration is successful, false otherwise
+     * Delete user - soft deletes a user by updating the 'deleted_at' timestamp in the database
      */
-    public function registerUser(array $data): string
+    public function delete($id): bool
     {
-        $hashedPassword = $this->password->hash($data['password']);
-
-        $this->database->table('users')->insert([
-            'login' => $data['login'],
-            'firstname' => $data['firstname'],
-            'lastname' => $data['lastname'],
-            'email' => $data['email'],
-            'password' => $hashedPassword,
-        ]);
-
-        return 'success';
-    }
-
-    /**
-     * Delete user
-     * Deletes a user according to id
-     * @param mixed $id
-     * @return void
-     */
-    public function deleteUser($id): void
-    {
-        $this->database->table('users')->where('id', $id)->update(['deleted_at' => new \DateTime()]);
+        try {
+            $this->database->table('users')->where('id', $id)->update(['deleted_at' => new \DateTime()]);
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }
