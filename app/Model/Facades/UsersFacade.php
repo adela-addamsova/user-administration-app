@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace App\Model;
 
+use App\Model\Interfaces\ManageUserInterface;
+use App\Model\Interfaces\ValidateUserInterface;
+use App\Model\Interfaces\UserDataInterface;
 use Nette\Database\Explorer;
-use Nette\Database\UniqueConstraintViolationException;
+use Nette\Database\Table\Selection;
 use Nette\Security\User;
 use Nette\Security\Passwords;
 use Nette\Http\Request;
-use App\Model\UserErrorMessages;
-use Exception;
 
 /**
  * Class UserService
  * Handles user-related operations - authentication, registration, and data management. 
  */
-class UserService
+class UsersFacade implements UserDataInterface, ManageUserInterface, ValidateUserInterface
 {
     private Explorer $database;
     private User $user;
@@ -114,7 +115,7 @@ class UserService
      * Retrieves all user data from the database
      * @return - returns a selection of all users from the database that are not deleted
      */
-    public function getUsersData()
+    public function getUsersData(): Selection
     {
         return $this->database->table('users')->where('deleted_at IS NULL');
     }

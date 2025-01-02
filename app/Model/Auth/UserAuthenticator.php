@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Model;
+namespace App\Model\Auth;
 
 use Nette\Database\Explorer;
 use Nette\Security\Passwords;
@@ -10,7 +10,7 @@ use Nette\Security\IIdentity;
 use Nette\Security\AuthenticationException;
 use Nette\Security\SimpleIdentity;
 use Nette\Security\Authenticator;
-use App\Model\UserErrorMessages;
+use App\Model\Errors\UserErrorMessages;
 
 /** 
  * Class Authenticator 
