@@ -12,14 +12,8 @@ class RouterFactory
     public static function createRouter(): RouteList
     {
         $router = new RouteList;
-		
-        $router[] = new Route('/', 'Login:login');
       
-        $router[] = new Route('/<presenter>/<action>[/<id>]', [
-            'presenter' => 'Login',
-            'action' => 'default',
-            'id' => null,
-        ]);
+        $router[] = new Route('/<presenter>[/<action>][/<id=null>]', 'Login:default');
   
         return $router;
     }
